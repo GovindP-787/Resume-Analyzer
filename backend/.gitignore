@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtual environments
+/backend/venv/
+/backend/.venv/
+/venv/
+/.venv/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Uploaded resumes and user data
+backend/main/uploads/*
+!backend/main/uploads/.gitkeep
+
+# AI model cache
+.cache/
