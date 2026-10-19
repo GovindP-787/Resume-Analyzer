@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from schemas import userCreate, user_response, user_update, user_patch_update
 from sqlalchemy.exc import SQLAlchemyError
 from routes.routes import router
+from ai.analyzer import retrieve_chunks
 
 
 app = FastAPI()
