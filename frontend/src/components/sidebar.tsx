@@ -5,12 +5,13 @@ import settings_icon from "../assets/settings_icon.svg"
 import file_icon from "../assets/file_icon.svg"
 import sparkles from "../assets/sparkles.svg"
 import logout from "../assets/logout.svg"
+import {NavLink} from "react-router-dom"
 
 
 const Sidebar = () =>{
     return(
         <>
-        <div className = "w-62 h-screen bg-[#FFFFFF] border-r border-[#EAE8EF] flex flex-col items-center px-4.5 justify-between relative">
+        <div className = "w-[248px] shrink-0 h-screen bg-[#FFFFFF] border-r border-[#EAE8EF] flex flex-col items-center px-4.5 justify-between relative">
             <div className = "w-full flex flex-col items-center gap-6 p-px mt-5">
                 <div className = "w-full h-8" >
                     <h1 className = "text-[21px] font-bold font-inter"><span>Resu</span>Mate</h1>    {/*Logo of the application */}
@@ -18,24 +19,24 @@ const Sidebar = () =>{
                 <div className = "w-full flex flex-col gap-1.5">
                     <div className = "w-full h-12 bg-[#F5F5F5] rounded-lg flex items-center   gap-3 p-1">
                        <img src={layout} alt="layout" className = "w-5 h-5 ml-3 "/>
-                       <p className = "font-inter font text-[13px] font-semibold text-center w-[60%]">Dashborad</p>
+                       <p className = "font-inter font text-[13px] font-semibold text-center w-[60%] text-[#565161]">Dashborad</p>
                         
                     </div>
                     <div className = "w-full h-12 bg-[#F5F5F5] rounded-lg flex items-center gap-3">
                         <img src={file_icon} alt="files" className = "w-5 h-5 ml-3"/>
-                        <p className = "font-inter font text-[13px] font-semibold w-[60%] text-center">Analysis</p>
+                        <p className = "font-inter font text-[13px] font-semibold w-[60%] text-center text-[#565161]">Analysis</p>
                     </div>
                     <div className = "w-full h-12 bg-[#F5F5F5] rounded-lg flex items-center  gap-3">
                         <img src={history} alt="history" className = "w-5 h-5 ml-3"/>
-                        <p className = "font-inter font text-[13px] font-semibold w-[60%] text-center">Analysis History</p>
+                        <p className = "font-inter font text-[13px] font-semibold w-[60%] text-center text-[#565161]">Analysis History</p>
                     </div>
                     <div className = "w-full h-12 bg-[#F5F5F5] rounded-lg flex items-center  gap-3">
                         <img src={files} alt="settings" className = "w-5 h-5 ml-3"/>
-                        <p className = "font-inter font text-[13px] font-semibold w-[60%] text-center">My Resumes</p>
+                        <p className = "font-inter font text-[13px] font-semibold w-[60%] text-center text-[#565161]">My Resumes</p>
                     </div>
                     <div className = "w-full h-12 bg-[#F5F5F5] rounded-lg flex items-center  gap-3">
                         <img src={settings_icon} alt="settings" className = "w-5 h-5 ml-3"/>
-                        <p className = "font-inter font text-[13px] font-semibold w-[60%] text-center">Settings</p>
+                        <p className = "font-inter font text-[13px] font-semibold w-[60%] text-center text-[#565161]">Settings</p>
                     </div>
                 </div>
 
