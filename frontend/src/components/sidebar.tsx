@@ -7,7 +7,38 @@ import sparkles from "../assets/sparkles.svg"
 import logout from "../assets/logout.svg"
 import {NavLink} from "react-router-dom"
 
-
+const navItems = [
+    {
+        name: "Dashboard",
+        path: "/",
+        end: true,
+        icon: layout
+    },
+    {
+        name: "Analysis",
+        path: "/analysis",
+        end: false,
+        icon: file_icon
+    },
+    {
+        name: "Analysis History",
+        path: "/analysis-history",
+        end: false,
+        icon: history
+    },
+    {
+        name: "My Resumes",
+        path: "/my-resumes",
+        end: false,
+        icon: files
+    },
+    {
+        name: "Settings",
+        path: "/settings",
+        end: false,
+        icon: settings_icon
+    }
+]
 const Sidebar = () =>{
     return(
         <>
@@ -17,27 +48,30 @@ const Sidebar = () =>{
                     <h1 className = "text-[21px] font-bold font-inter"><span>Resu</span>Mate</h1>    {/*Logo of the application */}
                 </div>
                 <div className = "w-full flex flex-col gap-1.5">
-                    <div className = "w-full h-12 bg-[#F5F5F5] rounded-lg flex items-center   gap-3 p-1">
-                       <img src={layout} alt="layout" className = "w-5 h-5 ml-3 "/>
-                       <p className = "font-inter font text-[13px] font-semibold text-center w-[60%] text-[#565161]">Dashborad</p>
-                        
-                    </div>
-                    <div className = "w-full h-12 bg-[#F5F5F5] rounded-lg flex items-center gap-3">
-                        <img src={file_icon} alt="files" className = "w-5 h-5 ml-3"/>
-                        <p className = "font-inter font text-[13px] font-semibold w-[60%] text-center text-[#565161]">Analysis</p>
-                    </div>
-                    <div className = "w-full h-12 bg-[#F5F5F5] rounded-lg flex items-center  gap-3">
-                        <img src={history} alt="history" className = "w-5 h-5 ml-3"/>
-                        <p className = "font-inter font text-[13px] font-semibold w-[60%] text-center text-[#565161]">Analysis History</p>
-                    </div>
-                    <div className = "w-full h-12 bg-[#F5F5F5] rounded-lg flex items-center  gap-3">
-                        <img src={files} alt="settings" className = "w-5 h-5 ml-3"/>
-                        <p className = "font-inter font text-[13px] font-semibold w-[60%] text-center text-[#565161]">My Resumes</p>
-                    </div>
-                    <div className = "w-full h-12 bg-[#F5F5F5] rounded-lg flex items-center  gap-3">
-                        <img src={settings_icon} alt="settings" className = "w-5 h-5 ml-3"/>
-                        <p className = "font-inter font text-[13px] font-semibold w-[60%] text-center text-[#565161]">Settings</p>
-                    </div>
+                     {navItems.map((item) => (
+                         <NavLink
+                          key={item.path} to={item.path} end={item.end} className={({ isActive }) =>
+                            `w-full h-12 rounded-lg flex items-center gap-3 p-1
+                            ${isActive ? "bg-[#F5F3FF]" : "hover:bg-[#F5F5F5]"}`
+            }
+        >
+            {({ isActive }) => (
+                <>
+                    <img
+                        src={item.icon}
+                        alt={item.name}
+                        className="w-5 h-5 ml-3"
+                    />
+
+                    <p className={`font-inter text-[13px] font-semibold text-center w-[60%]
+                        ${isActive ? "text-[#7C3AED]" : "text-[#565161]"}`}
+                    >
+                        {item.name}
+                    </p>
+                </>
+            )}
+        </NavLink>
+    ))}
                 </div>
 
             </div>
