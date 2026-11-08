@@ -9,9 +9,20 @@ from schemas import userCreate, user_response, user_update, user_patch_update
 from sqlalchemy.exc import SQLAlchemyError
 from routes.routes import router
 from ai.analyzer import retrieve_chunks
+from fastapi.middleware.cors import CORSMiddleware 
 
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[ "http://localhost:5173",
+        "http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(router)
 
 # class User(BaseModel):
@@ -44,5 +55,7 @@ def home():
 #     if (user_id <= 0 or user_id > 100):
 #         raise HTTPException(status_code=400, detail="User ID must be a positive integer")
 #     return {"user ID": user_id}
+
+
 
 Base.metadata.create_all(bind=engine)

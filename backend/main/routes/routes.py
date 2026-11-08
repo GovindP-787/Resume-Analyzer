@@ -8,7 +8,7 @@ from models import Base, User, Resume
 from sqlalchemy.orm import Session
 from schemas import userCreate, user_response, user_update, user_patch_update, resume_response, resume_upload, ai
 from sqlalchemy.exc import SQLAlchemyError
-from fastapi import UploadFile, File
+from fastapi import UploadFile, File, Form
 import os
 from resume.pdf_reader import text_extracter
 from ai.analyzer import analyze_resume
@@ -97,7 +97,7 @@ def get_resume(user_id: int, db: Session = Depends(get_db)):
 #upload resume   
 @router.post("/resume/fileupload")
 def upload_resume(
-    user_id: int,
+    user_id: int = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -196,7 +196,7 @@ def patch_user(user_id: int, updated_user: user_patch_update,db: Session = Depen
 #analyze resume
 @router.post("/resume/{resume_id}/analyse")
 def analyse_resume(resume_id: int, resquest: ai, db: Session = Depends(get_db)):
-    resume = db.query(Resume).filter(Resume.user_id == resume_id).first()
+    resume = db.query(Resume).filter(Resume.id == resume_id).first()
     if resume is None:
         raise HTTPException(status_code=404, detail="Resume not found")
     if resume.text is None or resume.text.strip() == "":
