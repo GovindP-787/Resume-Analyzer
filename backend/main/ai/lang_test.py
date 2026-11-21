@@ -3,6 +3,7 @@ from lang_embeddings import get_embeddings
 from lang_document import create_langchain_document
 from lang_vectorstore import vector_store_db
 from lang_retriever import retrieve_chunks
+from lang_analyzer import analyze_resume
 
 
 
@@ -46,3 +47,12 @@ for i, result in enumerate(result):
 
 
 
+
+analysis = analyze_resume(
+    resume_id=100,
+    job_description=query
+)
+
+print("\n--- FINAL RESUME ANALYSIS ---")
+
+print(analysis.model_dump_json(indent=2))
