@@ -12,6 +12,11 @@ from fastapi import UploadFile, File, Form
 import os
 from resume.pdf_reader import text_extracter
 from ai.analyzer import analyze_resume
+from ai.lang_document import create_langchain_document
+from ai.lang_splitter import split_resume
+from ai.lang_vectorstore import vector_store_db
+from ai.lang_analyzer import analyze_resume as analyze_resume_langchain
+from models import Resume, Analysis
 
 router = APIRouter()
 
@@ -93,20 +98,69 @@ def get_resume(user_id: int, db: Session = Depends(get_db)):
 #     except SQLAlchemyError:
 #         db.rollback()
 #         raise HTTPException(status_code=500, detail="Database Error")
-  
-#upload resume   
+ ############################################################################################# 
+#upload resume custom rag   
+# @router.post("/resume/fileupload")
+# def upload_resume(
+#     user_id: int = Form(...),
+#     file: UploadFile = File(...),
+#     db: Session = Depends(get_db)
+# ):
+#     if not file.filename.lower().endswith(".pdf"):
+#         raise HTTPException(
+#             status_code=400,
+#             detail="Only PDF files are allowed"
+#         )
+
+#     upload_dir = "uploads"
+#     os.makedirs(upload_dir, exist_ok=True)
+
+#     file_path = os.path.join(upload_dir, file.filename)
+
+#     with open(file_path, "wb") as f:
+#         f.write(file.file.read())
+
+#     file_content = text_extracter(file_path)
+#     if not file_content.strip():
+#         raise HTTPException(
+#             status_code=400,
+#             detail="No extractable text found in PDF"
+#         )
+
+#     new_resume = Resume(
+#         file_name=file.filename,
+#         user_id=user_id,
+#         text=file_content
+#     )
+
+#     db.add(new_resume)
+#     db.commit()
+#     db.refresh(new_resume)
+
+#     return {
+#         "message": "Resume uploaded and processed successfully",
+#     "resume_id": new_resume.id,
+#     "file_name": new_resume.file_name,
+#     "user_id": new_resume.user_id,
+#     "extracted_text": file_content
+#     }
+###################################################################################
+
+#lanchain resume upload pipeline
 @router.post("/resume/fileupload")
 def upload_resume(
     user_id: int = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
+    # 1. Validate file
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(
             status_code=400,
             detail="Only PDF files are allowed"
         )
 
+    # 2. Save uploaded PDF
     upload_dir = "uploads"
     os.makedirs(upload_dir, exist_ok=True)
 
@@ -115,13 +169,16 @@ def upload_resume(
     with open(file_path, "wb") as f:
         f.write(file.file.read())
 
+    # 3. Extract text from PDF
     file_content = text_extracter(file_path)
+
     if not file_content.strip():
         raise HTTPException(
             status_code=400,
             detail="No extractable text found in PDF"
         )
 
+    # 4. Save resume in PostgreSQL
     new_resume = Resume(
         file_name=file.filename,
         user_id=user_id,
@@ -132,13 +189,29 @@ def upload_resume(
     db.commit()
     db.refresh(new_resume)
 
+    # 5. Create LangChain Document
+    document = create_langchain_document(
+        resume_text=file_content,
+        resume_id=new_resume.id,
+        file_name=new_resume.file_name
+    )
+
+    # 6. Split document into chunks
+    chunks = split_resume(document)
+
+    # 7. Store chunks and embeddings in ChromaDB
+    vector_store_db(chunks)
+
+    # 8. Return response
     return {
-        "message": "Resume uploaded and processed successfully",
-    "resume_id": new_resume.id,
-    "file_name": new_resume.file_name,
-    "user_id": new_resume.user_id,
-    "extracted_text": file_content
+        "message": "Resume uploaded, processed and indexed successfully",
+        "resume_id": new_resume.id,
+        "file_name": new_resume.file_name,
+        "user_id": new_resume.user_id,
+        "extracted_text": file_content,
+        "chunks_created": len(chunks)
     }
+
 
 #delete resume
 @router.delete("/resume/{resume_id}", response_model=list[resume_response])
@@ -193,13 +266,68 @@ def patch_user(user_id: int, updated_user: user_patch_update,db: Session = Depen
     db.refresh(user)
     return user
 
-#analyze resume
+#analyze resume custom rag
+# @router.post("/resume/{resume_id}/analyse")
+# def analyse_resume(resume_id: int, resquest: ai, db: Session = Depends(get_db)):
+#     resume = db.query(Resume).filter(Resume.id == resume_id).first()
+#     if resume is None:
+#         raise HTTPException(status_code=404, detail="Resume not found")
+#     if resume.text is None or resume.text.strip() == "":
+#         raise HTTPException(status_code=400, detail="No extractable text found in the resume")
+#     result = analyze_resume(resume.text, resquest.job_description)
+#     return {"analysis_result": result}
+
+#langchain rag pipeline call
 @router.post("/resume/{resume_id}/analyse")
-def analyse_resume(resume_id: int, resquest: ai, db: Session = Depends(get_db)):
-    resume = db.query(Resume).filter(Resume.id == resume_id).first()
+def analyse_resume(resume_id: int,request: ai,db: Session = Depends(get_db)):
+    # 1. Fetch resume from PostgreSQL
+    resume = db.query(Resume).filter(
+        Resume.id == resume_id
+    ).first()
+
     if resume is None:
-        raise HTTPException(status_code=404, detail="Resume not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Resume not found"
+        )
+
+    # 2. Validate extracted text
     if resume.text is None or resume.text.strip() == "":
-        raise HTTPException(status_code=400, detail="No extractable text found in the resume")
-    result = analyze_resume(resume.text, resquest.job_description)
-    return {"analysis_result": result}
+        raise HTTPException(
+            status_code=400,
+            detail="No extractable text found in the resume"
+        )
+
+    # 3. Run LangChain analysis
+    result = analyze_resume_langchain(
+        resume_id=resume_id,
+        job_description=request.job_description
+    )
+
+     # 4. Convert Pydantic model into dictionary
+    analysis_data = result.model_dump()
+
+    # 5. Create database record
+    new_analysis = Analysis(resume_id=resume_id,job_description=request.job_description,analysis_result=analysis_data)
+
+    # 6. Save to PostgreSQL
+    try:
+        db.add(new_analysis)
+        db.commit()
+        db.refresh(new_analysis)
+
+    except Exception:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to save analysis"
+        )
+
+    # 7. Return saved analysis
+    return {
+        "message": "Analysis completed and saved successfully",
+        "analysis_id": new_analysis.id,
+        "resume_id": new_analysis.resume_id,
+        "created_at": new_analysis.created_at,
+        "analysis_result": new_analysis.analysis_result
+        }

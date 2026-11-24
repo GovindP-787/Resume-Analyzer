@@ -1,5 +1,5 @@
-from lang_vectorstore import vector_store_db
-from lang_embeddings import get_embeddings
+from .lang_vectorstore import vector_store_db
+from .lang_embeddings import get_embeddings
 from pathlib import Path
 from langchain_chroma import Chroma
 
@@ -13,6 +13,14 @@ def load_vector_store():
 
 def retrieve_chunks(query: str, resume_id: int, k: int = 3):
     db = load_vector_store()
+     # DEBUG: Check whether this resume exists in ChromaDB
+    stored_docs = db.get(
+        where={"resume_id": resume_id}
+    )
+
+    print("Requested resume ID:", resume_id)
+    print("Chunks found:", len(stored_docs["ids"]))
+    print("Stored metadata:", stored_docs["metadatas"][:2])
     result = db.similarity_search(
         query = query,
         k = k,
