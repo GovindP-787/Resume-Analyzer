@@ -59,9 +59,8 @@ return(
         </div>
         </div>
          <button className="w-30 h-10 border-2 rounded-2xl cursor-pointer " onClick={handleSubmit} disabled={loading}>
-                {loading ? "Analyzing..." : "Analyze Resume"}
-                 
-            </button>
+            {loading ? "Analyzing..." : "Analyze Resume"}    
+        </button>
          {result && (
                 <pre>
                     {JSON.stringify(result, null, 2)}
